@@ -5,4 +5,4 @@ test_*
 yolov3.weights
 
 #.idea는 IDE에 대한 정보들을 저장하고 있습니다. 따라서 추적하지 않습니다.
-.idea
+/.idea
