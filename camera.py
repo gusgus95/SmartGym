@@ -11,20 +11,19 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     cap = cv2.VideoCapture(camera_num)
     yolo_net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 
-
     ret, frame = cap.read()
 
     while True:
         cv2.imwrite('output.jpg', frame)
 
-        src = cv2.imread('output.jpg', cv2.IMREAD_GRAYSCALE)
+        src = cv2.imread('output.jpg', cv2.IMREAD_COLOR)
 
         roi = cv2.selectROI(src)
         print('roi = ', roi)
-
         break
-    cap.release()
+
     cv2.destroyAllWindows()
+
     # using gpu
     # yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
     # yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
