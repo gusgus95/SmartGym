@@ -62,6 +62,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     output_layers = [layer_names[i[0] - 1] for i in yolo_net.getUnconnectedOutLayers()]
 
     while True:
+        flag = False
         ret, frame = cap.read()
         # using gpu
         gpu_frame = cv2.cuda_GpuMat()
@@ -106,21 +107,21 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
                 cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
                 if check_available(BoundingBox(list_of_boxes[i]), BoundingBox(roi)):
                     cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
-                    flag = 1
+                    flag = True
                 else:
                     cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
-                    flag = 0
+                    flag = False
 
         if len(list_of_boxes) == 0:
             cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (255, 255, 0), 5)
-            
+
         if __name__ != "__main__":
             sem.acquire()
             connect_shared = shared_memory.SharedMemory(name=shared)  # name으로 지정된 공유메모리 연결
             temp_arr = np.ndarray(shape=shape, dtype=datatype, buffer=connect_shared.buf)
             # TEST CODE
             for i in range(shape[0]):
-                temp_arr[i] = True
+                temp_arr[i] = flag
 
             sem.release()
 

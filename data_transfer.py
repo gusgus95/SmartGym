@@ -1,6 +1,6 @@
 from multiprocessing import shared_memory, Semaphore
 import numpy as np
-
+from main import numOfMachines
 import socket
 
 from flask import Flask, json
@@ -21,6 +21,9 @@ def flask_transfer(names: list, arrshape: tuple, arrtype: property, sems: list):
 def machine_data():
     global listOfMemName, arrShape, arrType, semList
     machines = {}
+    for i in range(numOfMachines):
+        machines[i] = True
+
     for seq, sem in enumerate(semList):
         sem.acquire()       # 세마포어 획득
         connect_shared = shared_memory.SharedMemory(name=listOfMemName[seq])      # 일시적으로 메모리에 대한 접근권 획득
@@ -31,7 +34,7 @@ def machine_data():
         logging.info(str(temp_arr))
         temp_list = temp_arr.tolist()
         for sequence, availability in enumerate(temp_list):
-            machines[sequence] = availability
+            machines[sequence] = machines[sequence] and availability
     return json.jsonify(machines)
 
 

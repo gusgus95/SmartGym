@@ -37,3 +37,9 @@ if __name__ == "__main__":
     for shared in listOfMemBlock:
         shared.close()
         shared.unlink()
+
+# 1, 2, 3
+# T F F
+# T T T
+# F F F
+# T F T
