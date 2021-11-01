@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 global listOfMemName, arrShape, arrType, semList
 
+
 def flask_transfer(names: list, arrshape: tuple, arrtype: property, sems: list):
     global listOfMemName, arrShape, arrType, semList
     listOfMemName, arrShape, arrType, semList = names, arrshape, arrtype, sems
@@ -42,7 +43,7 @@ def udp_transfer(memory_name, shared_array, sem: Semaphore):
     port = 5051
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_socket.bind((host_ip, port))
-    prev = {} #
+    prev = {}  #
     while True:
         client_receive, client_addr = client_socket.recvfrom(1024)
         sem.acquire()
