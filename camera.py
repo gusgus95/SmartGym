@@ -5,24 +5,26 @@ import numpy as np
 import time
 import mediapipe as mp
 
-def check_available(box):
+
+def check_available(box, tx, ty, tw, th):
     x, y, x2, y2 = box[0], box[1], box[0] + box[2], box[1] + box[3]
     if x > x2:
         x, x2 = x2, x
     if y > y2:
         y, y2 = y2, y
-    if x < 630 and x2 > 423 and y < 473 and y2 > 114:
-        a = max(x, 423)
-        b = max(y, 114)
-        a2 = min(x2, 630)
-        b2 = min(y2, 473)
+    if x < tx + tw and x2 > tx and y < ty + th and y2 > ty:
+        a = max(x, tx)
+        b = max(y, ty)
+        a2 = min(x2, tx + tw)
+        b2 = min(y2, ty + th)
         area = (a2 - a) * (b2 - b)
-        if area > 37156:
+        if area > tw*th/2:
             return True
         else:
             return False
     else:
         return False
+
 
 def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared: str = None,
                               shape=None, datatype=None, sem: Semaphore = None):
@@ -41,8 +43,8 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     cv2.destroyAllWindows()
 
     # using gpu
-    yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    # yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+    # yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     with open("yolo.names", "r") as f:
         classes = [line.strip() for line in f.readlines()]
@@ -52,8 +54,8 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     while True:
         ret, frame = cap.read()
         # using gpu
-        gpu_frame = cv2.cuda_GpuMat()
-        gpu_frame.upload(frame)
+        # gpu_frame = cv2.cuda_GpuMat()
+        # gpu_frame.upload(frame)
 
         h, w, c = frame.shape
         blob = cv2.dnn.blobFromImage(frame, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
@@ -84,7 +86,6 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
         indexes = cv2.dnn.NMSBoxes(list_of_boxes, confidences, 0.45, 0.4)
         tx, ty, tw, th = roi
-        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
 
         for i in range(len(list_of_boxes)):
             if i in indexes:
@@ -93,6 +94,12 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
                 score = confidences[i]
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 5)
                 cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
+                if check_available(list_of_boxes[i], tx, ty, tw, th):
+                    cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
+                    flag = 1
+                else:
+                    cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
+                    flag = 0
 
         if __name__ != "__main__":
             sem.acquire()
@@ -101,7 +108,8 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
             # TEST CODE
             for i in range(shape[0]):
 
-                temp_arr[i] = False   # aaaaaa!!!
+                temp_arr[i] = True
+
             sem.release()
 
         cv2.imshow(process_title, frame)
