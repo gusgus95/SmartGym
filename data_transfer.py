@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 global listOfMemName, arrShape, arrType, semList
 
+
 def flask_transfer(names: list, arrshape: tuple, arrtype: property, sems: list):
     global listOfMemName, arrShape, arrType, semList
     listOfMemName, arrShape, arrType, semList = names, arrshape, arrtype, sems
