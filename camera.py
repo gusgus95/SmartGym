@@ -6,8 +6,18 @@ import time
 import mediapipe as mp
 
 
-def check_available(box, tx, ty, tw, th):
-    x, y, x2, y2 = box[0], box[1], box[0] + box[2], box[1] + box[3]
+class BoundingBox:
+    def __init__(self, box: list):
+        self.x1, self.y1, self.width, self.height = box[0], box[1], box[2], box[3]
+        self.x2, self.y2 = (self.x2 + self.width) + (self.y1 + self.height)
+
+    def __str__(self):
+        return "LeftTop = " + str((self.x1, self.y1)) + "RightDown = " + str((self.x2, self.y2))
+
+
+def check_available(human_box: BoundingBox, machine_box: BoundingBox):
+    x, y, x2, y2 = human_box.x1, human_box.x2, human_box.y1, human_box.y2
+    tx, ty, th, tw = machine_box.x1, machine_box.y1, machine_box.height, machine_box.width
     if x > x2:
         x, x2 = x2, x
     if y > y2:
@@ -18,7 +28,7 @@ def check_available(box, tx, ty, tw, th):
         a2 = min(x2, tx + tw)
         b2 = min(y2, ty + th)
         area = (a2 - a) * (b2 - b)
-        if area > tw*th/2:
+        if area > tw * th / 2:
             return True
         else:
             return False
@@ -34,8 +44,8 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     ret, frame = cap.read()
 
     while True:
-        cv2.imwrite('output'+process_title+'.jpg', frame)
-        src = cv2.imread('output'+process_title+'.jpg', cv2.IMREAD_COLOR)
+        cv2.imwrite('output' + process_title + '.jpg', frame)
+        src = cv2.imread('output' + process_title + '.jpg', cv2.IMREAD_COLOR)
         roi = cv2.selectROI(src)
         print('roi = ', roi)
         break
@@ -49,7 +59,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     with open("yolo.names", "r") as f:
         classes = [line.strip() for line in f.readlines()]
     layer_names = yolo_net.getLayerNames()
-    output_layers = [layer_names[i[0]-1] for i in yolo_net.getUnconnectedOutLayers()]
+    output_layers = [layer_names[i[0] - 1] for i in yolo_net.getUnconnectedOutLayers()]
 
     while True:
         ret, frame = cap.read()
@@ -63,7 +73,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
         outs = yolo_net.forward(output_layers)
         class_ids = []
         confidences = []
-        list_of_boxes = []          # 탐지된 오브젝트의 바운딩 박스들을 저장해두는 리스트
+        list_of_boxes = []  # 탐지된 오브젝트의 바운딩 박스들을 저장해두는 리스트
         for out in outs:
             for detection in out:
                 scores = detection[5:]
@@ -103,11 +113,10 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
         if __name__ != "__main__":
             sem.acquire()
-            connect_shared = shared_memory.SharedMemory(name=shared)       # name으로 지정된 공유메모리 연결
+            connect_shared = shared_memory.SharedMemory(name=shared)  # name으로 지정된 공유메모리 연결
             temp_arr = np.ndarray(shape=shape, dtype=datatype, buffer=connect_shared.buf)
             # TEST CODE
             for i in range(shape[0]):
-
                 temp_arr[i] = True
 
             sem.release()
