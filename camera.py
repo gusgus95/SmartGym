@@ -21,6 +21,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
         break
 
     cv2.destroyAllWindows()
+
     # using gpu
     yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
     yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
@@ -64,6 +65,8 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
                         class_ids.append(class_id)
 
         indexes = cv2.dnn.NMSBoxes(list_of_boxes, confidences, 0.45, 0.4)
+        tx, ty, tw, th = roi
+        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
 
         for i in range(len(list_of_boxes)):
             if i in indexes:
@@ -79,6 +82,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
             temp_arr = np.ndarray(shape=shape, dtype=datatype, buffer=connect_shared.buf)
             # TEST CODE
             for i in range(shape[0]):
+
                 temp_arr[i] = False
             sem.release()
 
