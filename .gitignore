@@ -9,3 +9,6 @@ yolov3.weights
 
 # 인터프리터로 python파일을 실행시킬때 생성된 cache를 저장하는 __pycache__ 디렉토리는 추적하지 않습니다.
 /__pycache__
+
+# output#.jpg 파일은 추적하지 않습니다.
+output*.jpg
