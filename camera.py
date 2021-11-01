@@ -86,7 +86,6 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
         indexes = cv2.dnn.NMSBoxes(list_of_boxes, confidences, 0.45, 0.4)
         tx, ty, tw, th = roi
-        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
 
         for i in range(len(list_of_boxes)):
             if i in indexes:
@@ -95,6 +94,12 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
                 score = confidences[i]
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 5)
                 cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
+                if check_available(list_of_boxes[i], tx, ty, tw, th):
+                    cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
+                    flag = 1
+                else:
+                    cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
+                    flag = 0
 
         if __name__ != "__main__":
             sem.acquire()
@@ -102,11 +107,9 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
             temp_arr = np.ndarray(shape=shape, dtype=datatype, buffer=connect_shared.buf)
             # TEST CODE
             for i in range(shape[0]):
-                for j in range(len(list_of_boxes)):
-                    if check_available(list_of_boxes[j], tx, ty, tw, th):
-                        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
-                        temp_arr[i] = True
-                temp_arr[i] = False
+
+                temp_arr[i] = True
+
             sem.release()
 
         cv2.imshow(process_title, frame)
