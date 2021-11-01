@@ -101,7 +101,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
             # TEST CODE
             for i in range(shape[0]):
 
-                temp_arr[i] = False
+                temp_arr[i] = False   # aaaaaa!!!
             sem.release()
 
         cv2.imshow(process_title, frame)
