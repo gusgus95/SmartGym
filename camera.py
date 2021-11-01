@@ -5,6 +5,24 @@ import numpy as np
 import time
 import mediapipe as mp
 
+def check_available(box):
+    x, y, x2, y2 = box[0], box[1], box[0] + box[2], box[1] + box[3]
+    if x > x2:
+        x, x2 = x2, x
+    if y > y2:
+        y, y2 = y2, y
+    if x < 630 and x2 > 423 and y < 473 and y2 > 114:
+        a = max(x, 423)
+        b = max(y, 114)
+        a2 = min(x2, 630)
+        b2 = min(y2, 473)
+        area = (a2 - a) * (b2 - b)
+        if area > 37156:
+            return True
+        else:
+            return False
+    else:
+        return False
 
 def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared: str = None,
                               shape=None, datatype=None, sem: Semaphore = None):
