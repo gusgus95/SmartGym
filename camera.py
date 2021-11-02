@@ -53,9 +53,6 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
     while True:
         ret, frame = cap.read()
-
-        flag = 0
-
         # using gpu
         # gpu_frame = cv2.cuda_GpuMat()
         # gpu_frame.upload(frame)
@@ -89,6 +86,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
         indexes = cv2.dnn.NMSBoxes(list_of_boxes, confidences, 0.45, 0.4)
         tx, ty, tw, th = roi
+
         for i in range(len(list_of_boxes)):
             if i in indexes:
                 x, y, w, h = list_of_boxes[i]
@@ -109,10 +107,8 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
             temp_arr = np.ndarray(shape=shape, dtype=datatype, buffer=connect_shared.buf)
             # TEST CODE
             for i in range(shape[0]):
-                if flag == 1:
-                    temp_arr[i] = True
-                else:
-                    temp_arr[i] = False
+
+                temp_arr[i] = True
 
             sem.release()
 
