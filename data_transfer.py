@@ -46,7 +46,7 @@ def udp_transfer(memory_name, shared_array, sem: Semaphore):
     port = 5051
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_socket.bind((host_ip, port))
-    prev = {} #
+    prev = {}  #
     while True:
         client_receive, client_addr = client_socket.recvfrom(1024)
         sem.acquire()
