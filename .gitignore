@@ -12,3 +12,6 @@ yolov3.weights
 
 # output#.jpg 파일은 추적하지 않습니다.
 output*.jpg
+
+# 각 환경변수는 추적하지 않습니다. 로컬 리파지토리에서 수정하십시오.
+ENVIRONMENT.py

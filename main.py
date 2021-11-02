@@ -2,13 +2,14 @@ import camera
 import data_transfer
 from multiprocessing import shared_memory, Process, Semaphore
 import numpy as np
+import ENVIRONMENT
 
 # try catch 문 추가하기
 # signal handling 추가하기
 
 # ENVIRONMENT VARIABLE
-numOfCamera = 1            # 사용할 카메라의 개수
-numOfMachines = 1        # 인식할 기구의 개수
+numOfCamera = ENVIRONMENT.numOfCamera            # 사용할 카메라의 개수
+numOfMachines = ENVIRONMENT.numOfMachines        # 인식할 기구의 개수
 
 # this is a central process
 if __name__ == "__main__":
