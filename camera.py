@@ -2,6 +2,7 @@ from multiprocessing import shared_memory, Semaphore
 
 import cv2
 import numpy as np
+import ENVIRONMENT
 import time
 import mediapipe as mp
 
@@ -42,17 +43,19 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     yolo_net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 
     ret, frame = cap.read()
-
+    roi = []
     is_there_gpu = cv2.cuda.getCudaEnabledDeviceCount()
     while True:
         cv2.imwrite('output' + process_title + '.jpg', frame)
         src = cv2.imread('output' + process_title + '.jpg', cv2.IMREAD_COLOR)
-        roi = cv2.selectROI(src)
-        print('roi = ', roi)
+        for i in range(ENVIRONMENT.numOfMachines):
+            roi.append(cv2.selectROI(src))
+            a, b, c, d = roi[-1]
+            src = cv2.rectangle(src, (a, b), (a + c, b + d), (255, 0, 0), 3)
+
         break
 
     cv2.destroyAllWindows()
-
     # using gpu
     if is_there_gpu > 0:
         yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
@@ -64,7 +67,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     output_layers = [layer_names[i[0] - 1] for i in yolo_net.getUnconnectedOutLayers()]
 
     while True:
-        flag = False
+        flags = {}
         ret, frame = cap.read()
         # using gpu
         if is_there_gpu:
@@ -99,24 +102,27 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
                         class_ids.append(class_id)
 
         indexes = cv2.dnn.NMSBoxes(list_of_boxes, confidences, 0.45, 0.4)
-        tx, ty, tw, th = roi
 
-        for i in range(len(list_of_boxes)):
+        for i in range(len(list_of_boxes)):  # 사람마다 다를 필요가 있습니다. 수정필요
             if i in indexes:
                 x, y, w, h = list_of_boxes[i]
                 label = str(classes[class_ids[i]])
                 score = confidences[i]
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 5)
                 cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
-                if check_available(BoundingBox(list_of_boxes[i]), BoundingBox(roi)):
-                    cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
-                    flag = True
-                else:
-                    cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
-                    flag = False
+                for seq, x in enumerate(roi):
+                    tx, ty, tw, th = x
+                    if check_available(BoundingBox(list_of_boxes[i]), BoundingBox(x)):
+                        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
+                        flags[seq] = True
+                    else:
+                        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
+                        flags[seq] = False
 
-        if len(list_of_boxes) == 0:
-            cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (255, 255, 0), 5)
+        for x in roi:
+            tx, ty, tw, th = x
+            if len(list_of_boxes) == 0:
+                cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (255, 255, 0), 5)
 
         if __name__ != "__main__":
             sem.acquire()
@@ -124,7 +130,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
             temp_arr = np.ndarray(shape=shape, dtype=datatype, buffer=connect_shared.buf)
             # TEST CODE
             for i in range(shape[0]):
-                temp_arr[i] = flag
+                temp_arr[i] = flags[i]
 
             sem.release()
 
