@@ -43,6 +43,7 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
     ret, frame = cap.read()
 
+    is_there_gpu = cv2.cuda.getCudaEnabledDeviceCount()
     while True:
         cv2.imwrite('output' + process_title + '.jpg', frame)
         src = cv2.imread('output' + process_title + '.jpg', cv2.IMREAD_COLOR)
@@ -53,8 +54,9 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
     cv2.destroyAllWindows()
 
     # using gpu
-    yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-    yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+    if is_there_gpu > 0:
+        yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
     with open("yolo.names", "r") as f:
         classes = [line.strip() for line in f.readlines()]
@@ -65,8 +67,9 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
         flag = False
         ret, frame = cap.read()
         # using gpu
-        gpu_frame = cv2.cuda_GpuMat()
-        gpu_frame.upload(frame)
+        if is_there_gpu:
+            gpu_frame = cv2.cuda_GpuMat()
+            gpu_frame.upload(frame)
 
         h, w, c = frame.shape
         blob = cv2.dnn.blobFromImage(frame, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
