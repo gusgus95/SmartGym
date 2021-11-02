@@ -7,7 +7,7 @@ import numpy as np
 # signal handling 추가하기
 
 # ENVIRONMENT VARIABLE
-numOfCamera = 3            # 사용할 카메라의 개수
+numOfCamera = 1            # 사용할 카메라의 개수
 numOfMachines = 1        # 인식할 기구의 개수
 
 # this is a central process
