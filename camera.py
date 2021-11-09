@@ -103,21 +103,39 @@ def get_bounding_box_of_human(camera_num: int, process_title: str = None, shared
 
         indexes = cv2.dnn.NMSBoxes(list_of_boxes, confidences, 0.45, 0.4)
 
-        for i in range(len(list_of_boxes)):  # 사람마다 다를 필요가 있습니다. 수정필요
-            if i in indexes:
-                x, y, w, h = list_of_boxes[i]
-                label = str(classes[class_ids[i]])
-                score = confidences[i]
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 5)
-                cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
-                for seq, x in enumerate(roi):
-                    tx, ty, tw, th = x
-                    if check_available(BoundingBox(list_of_boxes[i]), BoundingBox(x)):
-                        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
-                        flags[seq] = True
-                    else:
-                        cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
-                        flags[seq] = False
+        # for i in range(len(list_of_boxes)):  # 사람마다 다를 필요가 있습니다. 수정필요
+        #     if i in indexes:
+        #         x, y, w, h = list_of_boxes[i]
+        #         label = str(classes[class_ids[i]])
+        #         score = confidences[i]
+        #         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 5)
+        #         cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
+        #         for seq, x in enumerate(roi):
+        #             tx, ty, tw, th = x
+        #             if check_available(BoundingBox(list_of_boxes[i]), BoundingBox(x)):
+        #                 cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
+        #                 flags[seq] = True
+        #             else:
+        #                 cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
+        #                 flags[seq] = False
+
+        for seq, a in enumerate(roi):
+            tx, ty, tw, th = a
+            flag_m = False
+            for i in range(len(list_of_boxes)):
+                if i in indexes:
+                    x, y, w, h = list_of_boxes[i]
+                    label = str(classes[class_ids[i]])
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 5)
+                    cv2.putText(frame, label, (x, y - 20), cv2.FONT_ITALIC, 0.5, (0, 0, 0), 1)
+                    if check_available(BoundingBox(list_of_boxes[i]), BoundingBox(a)):
+                        flag_m = True
+            if flag_m:
+                cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 0, 255), 5)
+                flags[seq] = True
+            else:
+                cv2.rectangle(frame, (tx, ty), (tx + tw, ty + th), (0, 255, 0), 5)
+                flags[seq] = False
 
         for x in roi:
             tx, ty, tw, th = x
